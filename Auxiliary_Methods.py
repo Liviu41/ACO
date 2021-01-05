@@ -57,3 +57,62 @@ def scores(df, y_test_flat, y_pred_flat):
     fig.show()
     
     print('Classification report:\n',classification_report(y_test_flat,y_pred_flat))
+    
+    
+def show_gt_and_img(df, X, clmap):
+    plt.figure(figsize=(8, 6))
+    plt.imshow(df.iloc[:, -1].values.reshape((X.shape[0], X.shape[0])), cmap='jet')
+    plt.colorbar()
+    plt.axis('off')
+    plt.title('Ground Truth')
+    plt.show()
+
+    plt.figure(figsize=(8, 6))
+    plt.imshow(np.array(clmap).reshape((X.shape[0], X.shape[0])), cmap='jet')
+    plt.colorbar()
+    plt.axis('off')
+    plt.title('Classification Map (KNeighborsClassifier)')
+    plt.savefig('Classification_map.png')
+    plt.show()
+    
+    
+def calcProbab(no_of_classes, i, j, k, tau, eta, alpha = 1, beta = 1):
+    p = (tau[i][j][k] ** alpha) * (eta[i][j][k] ** beta)                            
+    summ = 0
+    
+    for s in range(no_of_classes.size):
+        summ += (tau[i][j][s] ** alpha) * (eta[i][j][s] ** beta)      
+        
+    p /= summ    
+    return p
+        
+    
+def update_tau_solution_based(tau, pixel_class, k, rho, deltaTau):
+    retVal = tau            
+    
+    # evaporation 
+    retVal *= (1 - rho)
+    
+    # bonus
+    if pixel_class == k:
+        retVal += deltaTau 
+        
+    return retVal
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
