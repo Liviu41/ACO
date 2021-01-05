@@ -102,8 +102,8 @@ for i in range(eta.shape[0]):
             if clmap[i][j] != k:
                 eta[i][j][k] = 0.5
                 
-aco_map = clmap
-aco_map_test = aco_map
+aco_map = clmap.copy()
+aco_map_test = aco_map.copy()
 
 p = np.zeros((aco_map.shape[0], aco_map.shape[0], no_of_classes.size))
 
@@ -112,23 +112,24 @@ epochs = 1
 alpha, beta, rho, deltaTau = 1, 1, 0.5, 1
 
 
+
 # x, y = pixel coordinates, k = edge/class
 for i in range(aco_map.shape[0]):                    
     for j in range(aco_map.shape[1]):
+        tauCopy = tau.copy()
         for k in range(no_of_classes.size):
             
-            prevP = p[i][j][k]
-            p[i][j][k] = am.calcProbab(no_of_classes, i, j, k, tau, eta, alpha, beta)
+            p[i][j][k] = am.calcProbab(no_of_classes, i, j, k, tau, eta, alpha, beta)            
             
             # to be set to aco_map after it is tested 
             # TO DO: set rand probab here
+                          
+            tauCopy[i][j][k] = am.update_tau_solution_based(tau[i][j][k], aco_map_test[i][j], k, rho, deltaTau)
+                                    
+            # TO DO: update_tau_spatial_based  
             
-            # TO DO: correct update_tausolution_based
-            aco_map_test[i][j] = np.argmax(p[i][j])      
-
-            tau[i][j][k] = am.update_tau_solution_based(tau[i][j][k], aco_map_test[i][j], k, rho, deltaTau)
-
-            # TO DO: update_tau_spatial_based                     
+        aco_map_test[i][j] = np.argmax(p[i][j]) 
+        tau[i][j] = tauCopy[i][j]                    
                 
                 
                 
