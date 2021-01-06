@@ -59,7 +59,7 @@ def scores(df, y_test_flat, y_pred_flat):
     print('Classification report:\n',classification_report(y_test_flat,y_pred_flat))
     
     
-def show_gt_and_img(df, X, clmap):
+def show_gt_classifierMap_ACOMap(df, X, clmap, aco_bool = False, aco_map = None):
     plt.figure(figsize=(8, 6))
     plt.imshow(df.iloc[:, -1].values.reshape((X.shape[0], X.shape[0])), cmap='jet')
     plt.colorbar()
@@ -74,6 +74,16 @@ def show_gt_and_img(df, X, clmap):
     plt.title('Classification Map (KNeighborsClassifier)')
     plt.savefig('Classification_map.png')
     plt.show()
+    
+    if aco_bool == True:
+        plt.figure(figsize=(8, 6))
+        plt.imshow(np.array(aco_map), cmap='jet')
+        plt.colorbar()
+        plt.axis('off')
+        plt.title('ACO')
+        plt.savefig('Classification_map.png')
+        plt.show()        
+            
     
     
 def calcProbab(no_of_classes, i, j, k, tau, eta, alpha = 1, beta = 1):
@@ -98,6 +108,24 @@ def update_tau_solution_based(tau, pixel_class, k, rho, deltaTau):
         retVal += deltaTau 
         
     return retVal
+
+def myScore(gt, clmap, aco_map):
+    matrix_classifier = np.zeros((clmap.shape[0], clmap.shape[0]))
+    matrix_aco = np.zeros((aco_map.shape[0], aco_map.shape[0]))
+    
+    for i in range(gt.shape[0]):
+        for j in range(gt.shape[1]):
+            if gt[i][j] != clmap[i][j]:                
+                matrix_classifier[i][j] = 1
+            if gt[i][j] != aco_map[i][j]:                
+                matrix_aco[i][j] = 1
+                
+    score_classifier = np.sum(matrix_classifier)
+    score_aco = np.sum(matrix_aco)
+    
+    print("Lower is better!")
+    print("score_classifier = " + str(score_classifier))
+    print("score_aco = " + str(score_aco))
 
 
 

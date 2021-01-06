@@ -3,6 +3,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from tqdm import tqdm
 import Auxiliary_Methods as am
+import random
 
 
 X, y = am.read_HSI()
@@ -11,6 +12,8 @@ X, y = am.read_HSI()
 
 # The below method extracts the pixels from the HSI and saves into CSV 
 df = am.extract_pixels(X, y)
+
+gt = df.iloc[:, -1].values.reshape((X.shape[0], X.shape[0]))  
 
 # X = (145*145, 200), y = (145*145, 1)
 X_flat = df.iloc[:, :-1].values
@@ -36,7 +39,7 @@ for i in tqdm(range(len(indices_test_flat))):
     clmap_flat[indices_test_flat[i]] = pre[i]
 
 # am.scores(df, y_test_flat, y_pred_flat)
-# am.show_gt_and_img(df, X, clmap_flat)
+# am.show_gt_classifierMap_ACOMap(df, X, clmap_flat)
 
 # ACO starts here
 
@@ -103,36 +106,40 @@ for i in range(eta.shape[0]):
                 eta[i][j][k] = 0.5
                 
 aco_map = clmap.copy()
-aco_map_test = aco_map.copy()
 
-p = np.zeros((aco_map.shape[0], aco_map.shape[0], no_of_classes.size))
+p = np.ones((aco_map.shape[0], aco_map.shape[0], no_of_classes.size))/17
 
 # no loop for epochs yet
 epochs = 1
-alpha, beta, rho, deltaTau = 1, 1, 0.5, 1
+alpha, beta, rho, deltaTau, epochs = 0.5, 5, 0.5, 10, 5
 
 
 
 # x, y = pixel coordinates, k = edge/class
-for i in range(aco_map.shape[0]):                    
-    for j in range(aco_map.shape[1]):
-        tauCopy = tau.copy()
-        for k in range(no_of_classes.size):
-            
-            p[i][j][k] = am.calcProbab(no_of_classes, i, j, k, tau, eta, alpha, beta)            
-            
-            # to be set to aco_map after it is tested 
-            # TO DO: set rand probab here
-                          
-            tauCopy[i][j][k] = am.update_tau_solution_based(tau[i][j][k], aco_map_test[i][j], k, rho, deltaTau)
-                                    
-            # TO DO: update_tau_spatial_based  
-            
-        aco_map_test[i][j] = np.argmax(p[i][j]) 
-        tau[i][j] = tauCopy[i][j]                    
+for ep in range(epochs):
+    for i in range(aco_map.shape[0]):                    
+        for j in range(aco_map.shape[1]):
+            tauCopy = tau.copy()
+            for k in range(no_of_classes.size):
                 
+                p[i][j][k] = am.calcProbab(no_of_classes, i, j, k, tau, eta, alpha, beta)            
                 
+                # to be set to aco_map after it is tested 
+                # TO DO: set rand probab here
+                              
+                tauCopy[i][j][k] = am.update_tau_solution_based(tau[i][j][k], aco_map[i][j], k, rho, deltaTau)
+                                        
+                # TO DO: update_tau_spatial_based  
+                    
+            tau[i][j] = tauCopy[i][j]   
+            ant_choice = np.random.choice(np.array(range(17)), p = p[i][j])
+            #aco_map[i][j] = np.argmax(p[i][j])      
+            aco_map[i][j] = ant_choice                  
                 
+am.show_gt_classifierMap_ACOMap(df, X, clmap, True, aco_map)        
+     
+am.myScore(gt, clmap, aco_map)
+            
 
                 
                 
