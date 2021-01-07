@@ -21,7 +21,7 @@ y_flat = df.iloc[:, -1].values
 X_flat.shape, y_flat.shape
 
 X_train_flat, X_test_flat, y_train_flat, y_test_flat, indices_train_flat, indices_test_flat  = train_test_split(X_flat, y_flat,
-                                                            range(X_flat.shape[0]), test_size = 0.2, random_state = 12, stratify=y_flat)
+                                                            range(X_flat.shape[0]), test_size = 0.8, random_state = 12, stratify=y_flat)
 X_train_flat.shape, y_train_flat.shape
 
 
@@ -66,7 +66,7 @@ Pseudocode
        2       theta21   theta22   ..  theta2j
        ..        ..        ..      ..    ..
        
-4') Maybe step 7 could be used here.       
+4') Maybe step 8 could be used here.       
        
 5) For each test node compute probabilities of all possible ant solutions
     
@@ -111,27 +111,37 @@ p = np.ones((aco_map.shape[0], aco_map.shape[0], no_of_classes.size))/17
 
 # no loop for epochs yet
 epochs = 1
-alpha, beta, rho, deltaTau, epochs = 0.5, 5, 0.5, 10, 5
-
-
+alpha, beta, rho, deltaTau, epochs = 1, 2, 0.5, 1, 12
 
 # x, y = pixel coordinates, k = edge/class
 for ep in range(epochs):
     for i in range(aco_map.shape[0]):                    
         for j in range(aco_map.shape[1]):
-            tauCopy = tau.copy()
-            for k in range(no_of_classes.size):
-                
-                p[i][j][k] = am.calcProbab(no_of_classes, i, j, k, tau, eta, alpha, beta)            
-                
-                # to be set to aco_map after it is tested 
-                # TO DO: set rand probab here
-                              
-                tauCopy[i][j][k] = am.update_tau_solution_based(tau[i][j][k], aco_map[i][j], k, rho, deltaTau)
-                                        
-                # TO DO: update_tau_spatial_based  
-                    
-            tau[i][j] = tauCopy[i][j]   
+            f = np.zeros((no_of_classes.size))
+            for k in range(no_of_classes.size):                
+                p[i][j][k] = am.calcProbab(no_of_classes, i, j, k, tau, eta, alpha, beta)                                                                                                                  
+            
+            for k in range(no_of_classes.size):                
+                tau[i][j][k] = am.update_tau_solution_based(tau[i][j][k], p, i, j, k, rho, deltaTau)                                                                          
+                if i > 0 and j > 0 and i < 144 and j < 144:                    
+                        if aco_map[i + 1][j] == k:
+                            f[k] += 1 
+                        if aco_map[i - 1][j] == k:
+                            f[k] += 1
+                        if aco_map[i][j + 1] == k:
+                            f[k] += 1     
+                        if aco_map[i][j - 1] == k:
+                            f[k] += 1    
+                        if aco_map[i - 1][j - 1] == k:
+                            f[k] += 1    
+                        if aco_map[i + 1][j - 1] == k:
+                            f[k] += 1    
+                        if aco_map[i + 1][j + 1] == k:
+                            f[k] += 1 
+                        if aco_map[i - 1][j + 1] == k:
+                            f[k] += 1
+                tau[i][j][k] += f[k]**2
+            
             ant_choice = np.random.choice(np.array(range(17)), p = p[i][j])
             #aco_map[i][j] = np.argmax(p[i][j])      
             aco_map[i][j] = ant_choice                  

@@ -96,15 +96,17 @@ def calcProbab(no_of_classes, i, j, k, tau, eta, alpha = 1, beta = 1):
     p /= summ    
     return p
         
-    
-def update_tau_solution_based(tau, pixel_class, k, rho, deltaTau):
+# am.update_tau_solution_based(tau[i][j][k], p[i][j][k], k, rho, deltaTau)          
+def update_tau_solution_based(tau, p, i, j, k, rho, deltaTau):
     retVal = tau            
     
     # evaporation 
     retVal *= (1 - rho)
     
+    p_max = np.argmax(p[i][j])
+    
     # bonus
-    if pixel_class == k:
+    if p_max == k:
         retVal += deltaTau 
         
     return retVal
@@ -127,8 +129,29 @@ def myScore(gt, clmap, aco_map):
     print("score_classifier = " + str(score_classifier))
     print("score_aco = " + str(score_aco))
 
-
-
+            # f = array of neighbour classes
+           # f = np.zeros((no_of_classes.size))
+#  # TO DO: consider edges
+                # ignore edges for the moment                
+                # if i > 0 and j > 0 and i < 144 and j < 144:                    
+                #     if aco_map[i + 1][j] == k:
+                #         f[k] += 1 
+                #     if aco_map[i - 1][j] == k:
+                #         f[k] += 1
+                #     if aco_map[i][j + 1] == k:
+                #         f[k] += 1     
+                #     if aco_map[i][j - 1] == k:
+                #         f[k] += 1    
+                #     if aco_map[i - 1][j - 1] == k:
+                #         f[k] += 1    
+                #     if aco_map[i + 1][j - 1] == k:
+                #         f[k] += 1    
+                #     if aco_map[i + 1][j + 1] == k:
+                #         f[k] += 1 
+                #     if aco_map[i - 1][j + 1] == k:
+                #         f[k] += 1
+                
+                # tauCopy[i][j][k] + f[k]     
 
 
 
