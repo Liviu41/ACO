@@ -111,7 +111,7 @@ def update_tau_solution_based(tau, p, i, j, k, rho, deltaTau):
         
     return retVal
 
-def myScore(gt, clmap, aco_map):
+def myScore(gt, clmap, aco_map, test_size):
     matrix_classifier = np.zeros((clmap.shape[0], clmap.shape[0]))
     matrix_aco = np.zeros((aco_map.shape[0], aco_map.shape[0]))
     
@@ -125,33 +125,76 @@ def myScore(gt, clmap, aco_map):
     score_classifier = np.sum(matrix_classifier)
     score_aco = np.sum(matrix_aco)
     
+    score_classifier /= test_size
+    score_aco /= test_size 
+    
+    score_classifier = 1 - score_classifier
+    score_aco = 1 - score_aco
+    
     print("Lower is better!")
-    print("score_classifier = " + str(score_classifier))
-    print("score_aco = " + str(score_aco))
+    print(f'Classifier accuracy = {score_classifier:.3f}%')
+    print(f'ACO accuracy = {score_aco:.3f}%')
+    
+    return score_classifier, score_aco
+  
+    
+def computeF(i, j ,k, aco_map, no_of_classes, f):   
+    # if i == 0 and j == 0:
+    #     for a in range(i, i + 2):
+    #         for b in range(j, j + 2):
+    #             if aco_map[a][b] == k:
+    #                 f[k] += 1 
+                    
+    # if i == 0 and j != 0:
+    #     for a in range(i, i + 2):
+    #         for b in range(j - 1, j + 2):
+    #             if aco_map[a][b] == k:
+    #                 f[k] += 1  
+                    
+    # if i != 0 and j == 0:
+    #     for a in range(i - 1, i + 2):
+    #         for b in range(j, j + 2):
+    #             if aco_map[a][b] == k:
+    #                 f[k] += 1
 
-            # f = array of neighbour classes
-           # f = np.zeros((no_of_classes.size))
-#  # TO DO: consider edges
-                # ignore edges for the moment                
-                # if i > 0 and j > 0 and i < 144 and j < 144:                    
-                #     if aco_map[i + 1][j] == k:
-                #         f[k] += 1 
-                #     if aco_map[i - 1][j] == k:
-                #         f[k] += 1
-                #     if aco_map[i][j + 1] == k:
-                #         f[k] += 1     
-                #     if aco_map[i][j - 1] == k:
-                #         f[k] += 1    
-                #     if aco_map[i - 1][j - 1] == k:
-                #         f[k] += 1    
-                #     if aco_map[i + 1][j - 1] == k:
-                #         f[k] += 1    
-                #     if aco_map[i + 1][j + 1] == k:
-                #         f[k] += 1 
-                #     if aco_map[i - 1][j + 1] == k:
-                #         f[k] += 1
-                
-                # tauCopy[i][j][k] + f[k]     
+    # if i == 144 and j == 144:
+    #     for a in range(i - 1, i + 1):
+    #         for b in range(j - 1, j + 1):
+    #             if aco_map[a][b] == k:
+    #                 f[k] += 1  
+                    
+    # if i == 144 and j != 144:
+    #     for a in range(i - 1, i + 1):
+    #         for b in range(j - 1, j + 2):
+    #             if aco_map[a][b] == k:
+    #                 f[k] += 1  
+
+    # if i != 144 and j == 144:
+    #     for a in range(i - 1, i + 2):
+    #         for b in range(j - 1, j + 1):
+    #             if aco_map[a][b] == k:
+    #                 f[k] += 1
+
+    # if i == 0 and j == 144:
+    #     for a in range(i, i + 2):
+    #         for b in range(j - 1, j + 1):
+    #             if aco_map[a][b] == k:
+    #                 f[k] += 1
+
+    # if i == 144 and j == 0:
+    #     for a in range(i - 1, i + 1):
+    #         for b in range(j, j + 2):
+    #             if aco_map[a][b] == k:
+    #                 f[k] += 1                          
+                    
+        
+    for a in range(i - 1, i + 2):
+        for b in range(j - 1, j + 2):
+            if aco_map[a][b] == k:
+                f[k] += 1
+    return f[k]
+    
+
 
 
 

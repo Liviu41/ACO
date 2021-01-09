@@ -21,7 +21,7 @@ y_flat = df.iloc[:, -1].values
 X_flat.shape, y_flat.shape
 
 X_train_flat, X_test_flat, y_train_flat, y_test_flat, indices_train_flat, indices_test_flat  = train_test_split(X_flat, y_flat,
-                                                            range(X_flat.shape[0]), test_size = 0.8, random_state = 12, stratify=y_flat)
+                                                            range(X_flat.shape[0]), test_size = 0.7, random_state = 12, stratify=y_flat)
 X_train_flat.shape, y_train_flat.shape
 
 
@@ -111,7 +111,7 @@ p = np.ones((aco_map.shape[0], aco_map.shape[0], no_of_classes.size))/17
 
 # no loop for epochs yet
 epochs = 1
-alpha, beta, rho, deltaTau, epochs = 1, 2, 0.5, 1, 12
+alpha, beta, rho, deltaTau, epochs = 8, 1, 0.5, 1, 3
 
 # x, y = pixel coordinates, k = edge/class
 for ep in range(epochs):
@@ -123,32 +123,17 @@ for ep in range(epochs):
             
             for k in range(no_of_classes.size):                
                 tau[i][j][k] = am.update_tau_solution_based(tau[i][j][k], p, i, j, k, rho, deltaTau)                                                                          
-                if i > 0 and j > 0 and i < 144 and j < 144:                    
-                        if aco_map[i + 1][j] == k:
-                            f[k] += 1 
-                        if aco_map[i - 1][j] == k:
-                            f[k] += 1
-                        if aco_map[i][j + 1] == k:
-                            f[k] += 1     
-                        if aco_map[i][j - 1] == k:
-                            f[k] += 1    
-                        if aco_map[i - 1][j - 1] == k:
-                            f[k] += 1    
-                        if aco_map[i + 1][j - 1] == k:
-                            f[k] += 1    
-                        if aco_map[i + 1][j + 1] == k:
-                            f[k] += 1 
-                        if aco_map[i - 1][j + 1] == k:
-                            f[k] += 1
-                tau[i][j][k] += f[k]**2
+                if i > 0 and j > 0 and i < 144 and j < 144:   
+                    f[k] = am.computeF(i, j ,k, aco_map, no_of_classes, f)                        
+                tau[i][j][k] += f[k]
             
-            ant_choice = np.random.choice(np.array(range(17)), p = p[i][j])
-            #aco_map[i][j] = np.argmax(p[i][j])      
-            aco_map[i][j] = ant_choice                  
+            #ant_choice = np.random.choice(np.array(range(17)), p = p[i][j])
+            #aco_map[i][j] = ant_choice  
+            aco_map[i][j] = np.argmax(p[i][j])                      
                 
-am.show_gt_classifierMap_ACOMap(df, X, clmap, True, aco_map)        
-     
-am.myScore(gt, clmap, aco_map)
+am.show_gt_classifierMap_ACOMap(df, X, clmap, True, aco_map)            
+
+am.myScore(gt, clmap, aco_map, y_test_flat.shape[0])
             
 
                 
