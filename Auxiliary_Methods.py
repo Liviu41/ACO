@@ -60,31 +60,56 @@ def scores(df, y_test_flat, y_pred_flat):
     
     
 def show_gt_classifierMap_ACOMap(df, X, clmap, aco_bool = False, aco_map = None):
-    plt.figure(figsize=(8, 6))
-    plt.imshow(df.iloc[:, -1].values.reshape((X.shape[0], X.shape[0])), cmap='jet')
-    plt.colorbar()
-    plt.axis('off')
-    plt.title('Ground Truth')
-    plt.show()
+    # plt.figure(figsize=(8, 6))
+    # plt.imshow(df.iloc[:, -1].values.reshape((X.shape[0], X.shape[0])), cmap='jet')
+    # plt.colorbar()
+    # plt.axis('off')
+    # plt.title('Ground Truth')
+    # plt.show()
 
-    plt.figure(figsize=(8, 6))
-    plt.imshow(np.array(clmap).reshape((X.shape[0], X.shape[0])), cmap='jet')
-    plt.colorbar()
-    plt.axis('off')
-    plt.title('Classification Map (KNeighborsClassifier)')
-    plt.savefig('Classification_map.png')
-    plt.show()
+    # plt.figure(figsize=(8, 6))
+    # plt.imshow(np.array(clmap).reshape((X.shape[0], X.shape[0])), cmap='jet')
+    # plt.colorbar()
+    # plt.axis('off')
+    # plt.title('Classification Map (KNeighborsClassifier)')
+    # plt.savefig('Classification_map.png')
+    # plt.show()
+    
+    # if aco_bool == True:
+    #     plt.figure(figsize=(8, 6))
+    #     plt.imshow(np.array(aco_map), cmap='jet')
+    #     plt.colorbar()
+    #     plt.axis('off')
+    #     plt.title('ACO')
+    #     plt.savefig('Classification_map.png')
+    #     plt.show()    
+    
+    gt = df.iloc[:, -1].values.reshape((X.shape[0], X.shape[0])) 
+    classifier = np.array(clmap).reshape((X.shape[0], X.shape[0]))
+    if aco_bool == True:
+        aco = np.array(aco_map)
+    
+    rows = 1
+    cols = 3
+    axes=[]
+    fig=plt.figure(figsize=(12, 6))
+    
+    axes.append(fig.add_subplot(rows, cols, 1))
+    axes[-1].set_title("Ground Truth")  
+    plt.imshow(gt, cmap='jet')
+    
+    axes.append(fig.add_subplot(rows, cols, 2))
+    axes[-1].set_title("Classifier k-NN Result")  
+    plt.imshow(classifier, cmap='jet')
     
     if aco_bool == True:
-        plt.figure(figsize=(8, 6))
-        plt.imshow(np.array(aco_map), cmap='jet')
-        plt.colorbar()
-        plt.axis('off')
-        plt.title('ACO')
-        plt.savefig('Classification_map.png')
-        plt.show()        
-            
+        axes.append(fig.add_subplot(rows, cols, 3))
+        axes[-1].set_title("ACO Result")  
+        plt.imshow(aco, cmap='jet')
     
+    fig.tight_layout()    
+    plt.show()
+            
     
 def calcProbab(no_of_classes, i, j, k, tau, eta, alpha = 1, beta = 1):
     p = (tau[i][j][k] ** alpha) * (eta[i][j][k] ** beta)                            
@@ -96,6 +121,7 @@ def calcProbab(no_of_classes, i, j, k, tau, eta, alpha = 1, beta = 1):
     p /= summ    
     return p
         
+
 # am.update_tau_solution_based(tau[i][j][k], p[i][j][k], k, rho, deltaTau)          
 def update_tau_solution_based(tau, p, i, j, k, rho, deltaTau):
     retVal = tau            
@@ -110,6 +136,7 @@ def update_tau_solution_based(tau, p, i, j, k, rho, deltaTau):
         retVal += deltaTau 
         
     return retVal
+
 
 def myScore(gt, clmap, aco_map, test_size):
     matrix_classifier = np.zeros((clmap.shape[0], clmap.shape[0]))
@@ -131,67 +158,76 @@ def myScore(gt, clmap, aco_map, test_size):
     score_classifier = 1 - score_classifier
     score_aco = 1 - score_aco
     
+    score_classifier *= 100
+    score_aco *= 100
+    
     print("Lower is better!")
-    print(f'Classifier accuracy = {score_classifier:.3f}%')
-    print(f'ACO accuracy = {score_aco:.3f}%')
+    print(f'Classifier accuracy = {score_classifier:.2f}%')
+    print(f'ACO accuracy = {score_aco:.2f}%')
     
     return score_classifier, score_aco
   
     
 def computeF(i, j ,k, aco_map, no_of_classes, f):   
-    # if i == 0 and j == 0:
-    #     for a in range(i, i + 2):
-    #         for b in range(j, j + 2):
-    #             if aco_map[a][b] == k:
-    #                 f[k] += 1 
+    if i == 0 and j == 0:
+        for a in range(i, i + 2):
+            for b in range(j, j + 2):
+                if aco_map[a][b] == k:
+                    f[k] += 2 
                     
-    # if i == 0 and j != 0:
-    #     for a in range(i, i + 2):
-    #         for b in range(j - 1, j + 2):
-    #             if aco_map[a][b] == k:
-    #                 f[k] += 1  
+    if i == 0 and j != 0 and j != 144:
+        for a in range(i, i + 2):
+            for b in range(j - 1, j + 2):
+                if aco_map[a][b] == k:
+                    f[k] += 2  
                     
-    # if i != 0 and j == 0:
-    #     for a in range(i - 1, i + 2):
-    #         for b in range(j, j + 2):
-    #             if aco_map[a][b] == k:
-    #                 f[k] += 1
+    if i != 0 and j == 0 and i != 144:
+        for a in range(i - 1, i + 2):
+            for b in range(j, j + 2):
+                if aco_map[a][b] == k:
+                    f[k] += 2
 
-    # if i == 144 and j == 144:
-    #     for a in range(i - 1, i + 1):
-    #         for b in range(j - 1, j + 1):
-    #             if aco_map[a][b] == k:
-    #                 f[k] += 1  
+    if i == 144 and j == 144:
+        for a in range(i - 1, i + 1):
+            for b in range(j - 1, j + 1):
+                if aco_map[a][b] == k:
+                    f[k] += 2  
                     
-    # if i == 144 and j != 144:
-    #     for a in range(i - 1, i + 1):
-    #         for b in range(j - 1, j + 2):
-    #             if aco_map[a][b] == k:
-    #                 f[k] += 1  
+    if i == 144 and j != 144 and j != 0:
+        for a in range(i - 1, i + 1):
+            for b in range(j - 1, j + 2):
+                if aco_map[a][b] == k:
+                    f[k] += 2  
 
-    # if i != 144 and j == 144:
-    #     for a in range(i - 1, i + 2):
-    #         for b in range(j - 1, j + 1):
-    #             if aco_map[a][b] == k:
-    #                 f[k] += 1
+    if i != 144 and j == 144 and i != 0:
+        for a in range(i - 1, i + 2):
+            for b in range(j - 1, j + 1):
+                if aco_map[a][b] == k:
+                    f[k] += 2
 
-    # if i == 0 and j == 144:
-    #     for a in range(i, i + 2):
-    #         for b in range(j - 1, j + 1):
-    #             if aco_map[a][b] == k:
-    #                 f[k] += 1
+    if i == 0 and j == 144:
+        for a in range(i, i + 2):
+            for b in range(j - 1, j + 1):
+                if aco_map[a][b] == k:
+                    f[k] += 2
 
-    # if i == 144 and j == 0:
-    #     for a in range(i - 1, i + 1):
-    #         for b in range(j, j + 2):
-    #             if aco_map[a][b] == k:
-    #                 f[k] += 1                          
+    if i == 144 and j == 0:
+        for a in range(i - 1, i + 1):
+            for b in range(j, j + 2):
+                if aco_map[a][b] == k:
+                    f[k] += 2   
+
+    if i != 0 and i != 144 and j != 0 and j != 144:
+        for a in range(i - 1, i + 2):
+            for b in range(j - 1, j + 2):
+                if aco_map[a][b] == k:
+                    f[k] += 2                     
                     
         
-    for a in range(i - 1, i + 2):
-        for b in range(j - 1, j + 2):
-            if aco_map[a][b] == k:
-                f[k] += 1
+    # for a in range(i - 1, i + 2):
+    #     for b in range(j - 1, j + 2):
+    #         if aco_map[a][b] == k:
+    #             f[k] += 1
     return f[k]
     
 

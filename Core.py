@@ -46,9 +46,9 @@ for i in tqdm(range(len(indices_test_flat))):
 """ 
 Pseudocode
 
-1) Set training data - done
+1) Set training data
     
-2) Classify using standard classifier - done
+2) Classify using standard classifier
     
 3) Determine heuristic function eta 
     
@@ -82,8 +82,8 @@ Pseudocode
                 { 0, otherwise 
                     
 8) Update tau based on neighbours:
-    tau[i][j] += f[i][j] / 2
-    f[i][j] = no. of edges being j in the vicinity of pixel i
+    tau[i][j] += f[i][j]
+    where f[i][j] = no. of edges being j, in the vicinity of pixel i
     
 9) repeat from step 5 until desired no. of iterations has passed
     
@@ -111,7 +111,7 @@ p = np.ones((aco_map.shape[0], aco_map.shape[0], no_of_classes.size))/17
 
 # no loop for epochs yet
 epochs = 1
-alpha, beta, rho, deltaTau, epochs = 8, 1, 0.5, 1, 3
+alpha, beta, rho, deltaTau, epochs = 1.8, 0.2, 0.5, 1, 8
 
 # x, y = pixel coordinates, k = edge/class
 for ep in range(epochs):
@@ -122,9 +122,8 @@ for ep in range(epochs):
                 p[i][j][k] = am.calcProbab(no_of_classes, i, j, k, tau, eta, alpha, beta)                                                                                                                  
             
             for k in range(no_of_classes.size):                
-                tau[i][j][k] = am.update_tau_solution_based(tau[i][j][k], p, i, j, k, rho, deltaTau)                                                                          
-                if i > 0 and j > 0 and i < 144 and j < 144:   
-                    f[k] = am.computeF(i, j ,k, aco_map, no_of_classes, f)                        
+                tau[i][j][k] = am.update_tau_solution_based(tau[i][j][k], p, i, j, k, rho, deltaTau)                                                                                           
+                f[k] = am.computeF(i, j ,k, aco_map, no_of_classes, f)                        
                 tau[i][j][k] += f[k]
             
             #ant_choice = np.random.choice(np.array(range(17)), p = p[i][j])
