@@ -5,10 +5,13 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 import scikitplot as skplt
 import plotly.graph_objects as go
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import cohen_kappa_score
+from sklearn.decomposition import IncrementalPCA
 
 def read_HSI(verbose = False):
-    X = loadmat('C:\Projects\ACO\DB\Indian_Pines\Indian_pines_corrected.mat')['indian_pines_corrected']
-    y = loadmat('C:\Projects\ACO\DB\Indian_Pines\Indian_pines_gt.mat')['indian_pines_gt']
+    X = loadmat('..\..\DB\Indian_Pines\Indian_pines_corrected.mat')['indian_pines_corrected']
+    y = loadmat('..\..\DB\Indian_Pines\Indian_pines_gt.mat')['indian_pines_gt']
     if verbose == True:
         print(f"X shape: {X.shape}\ny shape: {y.shape}")
     return X, y
@@ -229,11 +232,72 @@ def computeF(i, j ,k, aco_map, no_of_classes, f):
     #         if aco_map[a][b] == k:
     #             f[k] += 1
     return f[k]
+
+
+def trainTestSplit(HSI, gt, TeRatio, randomState=41):
+    X_train, X_test, y_train, y_test = train_test_split(HSI, gt, test_size=TeRatio, random_state=randomState, stratify=gt)
+    return X_train, X_test, y_train, y_test
+
+
+def pca(HSI, components):
+    HSI_flat = np.reshape(HSI, (-1, HSI.shape[2]))
+    n_batches = 64
+    # incremental PCA due to very high memory usage
+    inc_pca = IncrementalPCA(n_components = components)
+    for X_batch in np.array_split(HSI_flat, n_batches):
+        inc_pca.partial_fit(X_batch)
+    X_ipca = inc_pca.transform(HSI_flat)
+    HSI_flat = np.reshape(X_ipca, (HSI.shape[0], HSI.shape[1], components))
+    return HSI_flat
+
+
+def results(X_test, y_test, model, classLabels):
+    y_pred = model.predict(X_test)
+    y_pred = np.argmax(y_pred, axis=1)
+    classification = classification_report(np.argmax(y_test, axis = 1), y_pred, target_names = classLabels)
+    accuracy = accuracy_score(np.argmax(y_test, axis = 1), y_pred)
+    confusion = confusion_matrix(np.argmax(y_test, axis = 1), y_pred)
+    kappa = cohen_kappa_score(np.argmax(y_test, axis = 1), y_pred)
+    score = model.evaluate(X_test, y_test, batch_size = 32)
+    Test_Loss =  score[0] * 100
+    Test_accuracy = score[1] * 100
+    return classification, confusion, Test_Loss, Test_accuracy, accuracy * 100, kappa * 100, classLabels, y_pred
+
+
+def padding(HSI, margin):
+    NHSI = np.zeros((HSI.shape[0] + 2 * margin, HSI.shape[1] + 2 * margin, HSI.shape[2]))    
+    NHSI[margin:HSI.shape[0] + margin, margin:HSI.shape[1] + margin, :] = HSI
+    return NHSI
+
+
+# compute 11x11 3d pacthes
+def HSI3dPatches(HSI, gt, windowSize):
+    margin = int((windowSize - 1) / 2)
+    NHSI = padding(HSI, margin=margin)
+    # split patches
+    patchesData = np.zeros((HSI.shape[0] * HSI.shape[1], windowSize, windowSize, HSI.shape[2]))
+    patchesLabels = np.zeros((HSI.shape[0] * HSI.shape[1]))
+    idx = 0
     
+    for i in range(margin, NHSI.shape[0] - margin):
+        for j in range(margin, NHSI.shape[1] - margin):
+            patch = NHSI[i - margin:i + margin + 1, j - margin:j + margin + 1]   
+            patchesData[idx, :, :, :] = patch
+            patchesLabels[idx] = gt[i - margin, j - margin]
+            idx = idx + 1
+            
+    patchesData = patchesData[patchesLabels > 0, :, :, :]
+    patchesLabels = patchesLabels[patchesLabels > 0]
+    patchesLabels -= 1
+    return patchesData, patchesLabels
 
 
-
-
+# Compute the Patch to Prepare for Ground Truths
+def Patch(data,height_index,width_index, winSize):
+    height_slice = slice(height_index, height_index + winSize)
+    width_slice = slice(width_index, width_index + winSize)
+    patch = data[height_slice, width_slice, :]
+    return patch
 
 
 

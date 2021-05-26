@@ -5,7 +5,6 @@ from tqdm import tqdm
 import Auxiliary_Methods as am
 import random
 
-
 X, y = am.read_HSI()
 
 #am.HSI_band_show(X, 180)
