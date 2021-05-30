@@ -77,7 +77,7 @@ model.compile(loss = 'categorical_crossentropy', optimizer = adam, metrics = ['a
 
 # Train and fit
 start = time.time()
-resTrain = model.fit(x = X_train, y = y_train, batch_size = 256, epochs = 10, validation_data = (X_val, y_val))
+resTrain = model.fit(x = X_train, y = y_train, batch_size = 256, epochs = 32, validation_data = (X_val, y_val))
 end = time.time()
 trainingTime = end - start
 
@@ -239,7 +239,7 @@ gt = df.iloc[:, -1].values.reshape((X.shape[0], X.shape[0]))
 clmap = clmap.astype(int)
 aco_map = aco_map.astype(int)
 gt = gt.astype(int)
-am.myScore(gt, clmap, aco_map, 14718)
+am.myScoreReloaded(gt, clmap, aco_map, 145*145*0.3, 145*145)
             
             
 

@@ -169,6 +169,38 @@ def myScore(gt, clmap, aco_map, test_size):
     print(f'ACO accuracy = {score_aco:.2f}%')
     
     return score_classifier, score_aco
+
+
+def myScoreReloaded(gt, clmap, aco_map, train_size, total):
+    matrix_classifier = np.zeros((clmap.shape[0], clmap.shape[0]))
+    matrix_aco = np.zeros((aco_map.shape[0], aco_map.shape[0]))
+    
+    for i in range(gt.shape[0]):
+        for j in range(gt.shape[1]):
+            if gt[i][j] == clmap[i][j]:                
+                matrix_classifier[i][j] = 1
+            if gt[i][j] == aco_map[i][j]:                
+                matrix_aco[i][j] = 1
+                
+    print(np.sum(matrix_classifier))
+    print(np.sum(matrix_aco))
+    print(total)
+    print(train_size)
+    score_classifier =  np.sum(matrix_classifier) - train_size
+    score_aco = np.sum(matrix_aco) - train_size
+    
+    dif = total - train_size
+    score_classifier /= dif
+    score_aco /= dif
+    
+    score_classifier *= 100
+    score_aco *= 100
+    
+    print("Lower is better!")
+    print(f'Classifier accuracy = {score_classifier:.2f}%')
+    print(f'ACO accuracy = {score_aco:.2f}%')
+    
+    return score_classifier, score_aco
   
     
 def computeF(i, j ,k, aco_map, no_of_classes, f):   
