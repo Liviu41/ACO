@@ -187,61 +187,69 @@ plt.title('Ground Truth')
 plt.show()
 
 
+import random
+score = np.zeros((1, 6))
 
-# two dimensional image in this implementation
-clmap = outputs
-
-X, y = am.read_HSI()
-df = am.extract_pixels(X, y)       
-
-no_of_classes = np.unique(y)
-
-tau = np.ones((outputs.shape[0], outputs.shape[0], no_of_classes.size))
-
-eta = np.ones((outputs.shape[0], outputs.shape[0], no_of_classes.size))
-
-# heuristic function: if pixel is assigned to class value = 1. otherwise it is 0.5
-for i in range(eta.shape[0]):
-    for j in range(eta.shape[1]):
-        for k in range(eta.shape[2]):
-            if clmap[i][j] != k:
-                eta[i][j][k] = 0.5
-                
-aco_map = clmap.copy()
-
-p = np.ones((aco_map.shape[0], aco_map.shape[0], no_of_classes.size))/17
-
-alpha, beta, rho, deltaTau, epochs = 1.2, 2, 0.1, 0.05, 8
-
-# x, y = pixel coordinates, k = edge/class
-for ep in range(epochs):
-    for i in range(aco_map.shape[0]):                    
-        for j in range(aco_map.shape[1]):
-            f = np.zeros((no_of_classes.size))
-            for k in range(no_of_classes.size):                
-                p[i][j][k] = am.calcProbab(no_of_classes, i, j, k, tau, eta, alpha, beta)                                                                                                                  
-            
-            for k in range(no_of_classes.size):                
-                tau[i][j][k] = am.update_tau_solution_based(tau[i][j][k], p, i, j, k, rho, deltaTau)                                                                                           
-                f[k] = am.computeF(i, j ,k, aco_map, no_of_classes, f)                        
-                tau[i][j][k] += f[k]
-            
-            #ant_choice = np.random.choice(np.array(range(17)), p = p[i][j])
-            #aco_map[i][j] = ant_choice  
-            aco_map[i][j] = np.argmax(p[i][j])                      
-
-# def show_gt_classifierMap_ACOMap(df, X, clmap, aco_bool = False, aco_map = None):     
+for test in range(1):
+    #alpha, beta, rho, deltaTau, epochs = random.uniform(0.01, 3), random.uniform(0.01, 3), random.uniform(0.01, 3), random.uniform(0.01, 3), 8    
+    alpha, beta, rho, deltaTau, epochs = 2.76, 1.72, 0.43, 2.23, 20    
     
-am.show_gt_classifierMap_ACOMap(df, X, clmap, True, aco_map)            
-
-# am.myScore(gt, clmap, aco_map, HSI.shape[0])       
-gt = df.iloc[:, -1].values.reshape((X.shape[0], X.shape[0]))  
-clmap = clmap.astype(int)
-aco_map = aco_map.astype(int)
-gt = gt.astype(int)
-am.myScoreReloaded(gt, clmap, aco_map, 145*145*0.3, 145*145)
-            
-            
+    # two dimensional image in this implementation
+    clmap = outputs
+    
+    X, y = am.read_HSI()
+    df = am.extract_pixels(X, y)       
+    
+    no_of_classes = np.unique(y)
+    
+    tau = np.ones((outputs.shape[0], outputs.shape[0], no_of_classes.size))
+    
+    eta = np.ones((outputs.shape[0], outputs.shape[0], no_of_classes.size))
+    
+    # heuristic function: if pixel is assigned to class value = 1. otherwise it is 0.5
+    for i in range(eta.shape[0]):
+        for j in range(eta.shape[1]):
+            for k in range(eta.shape[2]):
+                if clmap[i][j] != k:
+                    eta[i][j][k] = 0.5
+                    
+    aco_map = clmap.copy()
+    
+    p = np.ones((aco_map.shape[0], aco_map.shape[0], no_of_classes.size))/17
+    
+    # x, y = pixel coordinates, k = edge/class
+    for ep in range(epochs):
+        for i in range(aco_map.shape[0]):                    
+            for j in range(aco_map.shape[1]):
+                f = np.zeros((no_of_classes.size))
+                for k in range(no_of_classes.size):                
+                    p[i][j][k] = am.calcProbab(no_of_classes, i, j, k, tau, eta, alpha, beta)                                                                                                                  
+                
+                for k in range(no_of_classes.size):                
+                    tau[i][j][k] = am.update_tau_solution_based(tau[i][j][k], p, i, j, k, rho, deltaTau)                                                                                           
+                    f[k] = am.computeF(i, j ,k, aco_map, no_of_classes, f)                        
+                    tau[i][j][k] += f[k]
+                
+                #ant_choice = np.random.choice(np.array(range(17)), p = p[i][j])
+                #aco_map[i][j] = ant_choice  
+                aco_map[i][j] = np.argmax(p[i][j])                      
+    
+    # def show_gt_classifierMap_ACOMap(df, X, clmap, aco_bool = False, aco_map = None):     
+        
+    am.show_gt_classifierMap_ACOMap(df, X, clmap, True, aco_map)            
+    
+    # am.myScore(gt, clmap, aco_map, HSI.shape[0])       
+    gt = df.iloc[:, -1].values.reshape((X.shape[0], X.shape[0]))  
+    clmap = clmap.astype(int)
+    aco_map = aco_map.astype(int)
+    gt = gt.astype(int)
+    scoreclassf,  scoreToAppend = am.myScoreReloaded(gt, clmap, aco_map, 145*145*0.3, 145*145)
+    score[test][0] = alpha
+    score[test][1] = beta
+    score[test][2] = rho
+    score[test][3] = deltaTau
+    score[test][4] = epochs
+    score[test][5] = scoreToAppend
 
 
 
