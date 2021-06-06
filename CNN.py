@@ -147,41 +147,41 @@ plt.rcParams.update({'font.size': 12})
 sns.heatmap(cm, cmap= "YlGnBu", annot=annot, fmt='', ax=ax)
 
 
-# data_path = os.path.join(os.getcwd(),'C:\Projects\ACO\DB\Indian_Pines')
-# HSI = sio.loadmat(os.path.join(data_path, 'Indian_pines_corrected.mat'))['indian_pines_corrected']
-# gt = labels = sio.loadmat(os.path.join(data_path, 'Indian_pines_gt.mat'))['indian_pines_gt']
-# # Check the Dimensions of HSI
-# height = gt.shape[0]
-# width = gt.shape[1]
-# winSize = 11
-# # Dimensional Reduction and zero padding
-# HSI = am.pca(HSI, 20)
-# HSI = am.padding(HSI, 11//2)
-# # Calculate the predicted Ground Truths
-# outputs = np.zeros((height,width))
-# for i in range(height):
-#     for j in range(width):
-#         target = int(gt[i,j])
-#         if target == 0 :
-#             continue
-#         else :
-#             image_patch = am.Patch(HSI,i,j, winSize)
-#             X_test_image = image_patch.reshape(1,image_patch.shape[0],
-#                                                 image_patch.shape[1], image_patch.shape[2], 1).astype('float32')                                   
-#             prediction = (model.predict(X_test_image))
-#             prediction = np.argmax(prediction, axis=1)
-#             outputs[i][j] = prediction + 1
+data_path = os.path.join(os.getcwd(),'C:\Projects\ACO\DB\Indian_Pines')
+HSI = sio.loadmat(os.path.join(data_path, 'Indian_pines_corrected.mat'))['indian_pines_corrected']
+gt = labels = sio.loadmat(os.path.join(data_path, 'Indian_pines_gt.mat'))['indian_pines_gt']
+# Check the Dimensions of HSI
+height = gt.shape[0]
+width = gt.shape[1]
+winSize = 11
+# Dimensional Reduction and zero padding
+HSI = am.pca(HSI, 20)
+HSI = am.padding(HSI, 11//2)
+# Calculate the predicted Ground Truths
+outputs = np.zeros((height,width))
+for i in range(height):
+    for j in range(width):
+        target = int(gt[i,j])
+        if target == 0 :
+            continue
+        else :
+            image_patch = am.Patch(HSI,i,j, winSize)
+            X_test_image = image_patch.reshape(1,image_patch.shape[0],
+                                                image_patch.shape[1], image_patch.shape[2], 1).astype('float32')                                   
+            prediction = (model.predict(X_test_image))
+            prediction = np.argmax(prediction, axis=1)
+            outputs[i][j] = prediction + 1
 
-# plt.figure(figsize=(8, 6))
-# plt.imshow(outputs, cmap='jet')
-# plt.colorbar()
-# plt.axis('off')
-# plt.title('Prediction')
-# plt.show()
+plt.figure(figsize=(8, 6))
+plt.imshow(outputs, cmap='jet')
+plt.colorbar()
+plt.axis('off')
+plt.title('Prediction')
+plt.show()
 
-# plt.figure(figsize=(8, 6))
-# plt.imshow(gt, cmap='jet')
-# plt.colorbar()
-# plt.axis('off')
-# plt.title('Ground Truth')
-# plt.show()
+plt.figure(figsize=(8, 6))
+plt.imshow(gt, cmap='jet')
+plt.colorbar()
+plt.axis('off')
+plt.title('Ground Truth')
+plt.show()

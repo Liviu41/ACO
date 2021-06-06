@@ -24,7 +24,6 @@ def extract_pixels(X, y, verbose = False):
     df = pd.DataFrame(data = q)
     df = pd.concat([df, pd.DataFrame(data = y.ravel())], axis=1)  
     df.columns= [f'band{i}' for i in range(1, 1+X.shape[2])]+['class']
-    df.to_csv('Dataset.csv') 
     if verbose == True:
         df.head()
     return df
@@ -87,8 +86,8 @@ def show_gt_classifierMap_ACOMap(df, X, clmap, aco_bool = False, aco_map = None)
     #     plt.savefig('Classification_map.png')
     #     plt.show()    
     
-    gt = df.iloc[:, -1].values.reshape((X.shape[0], X.shape[0])) 
-    classifier = np.array(clmap).reshape((X.shape[0], X.shape[0]))
+    gt = df.iloc[:, -1].values.reshape((X.shape[0], X.shape[1])) 
+    classifier = np.array(clmap).reshape((X.shape[0], X.shape[1]))
     if aco_bool == True:
         aco = np.array(aco_map)
     
@@ -102,12 +101,12 @@ def show_gt_classifierMap_ACOMap(df, X, clmap, aco_bool = False, aco_map = None)
     plt.imshow(gt, cmap='jet')
     
     axes.append(fig.add_subplot(rows, cols, 2))
-    axes[-1].set_title("Classifier k-NN Result")  
+    axes[-1].set_title("Classifier Result")  
     plt.imshow(classifier, cmap='jet')
     
     if aco_bool == True:
         axes.append(fig.add_subplot(rows, cols, 3))
-        axes[-1].set_title("ACO Result")  
+        axes[-1].set_title("Proposed Algorithm Result")  
         plt.imshow(aco, cmap='jet')
     
     fig.tight_layout()    
@@ -163,10 +162,9 @@ def myScore(gt, clmap, aco_map, test_size):
     
     score_classifier *= 100
     score_aco *= 100
-    
-    print("Lower is better!")
-    print(f'Classifier accuracy = {score_classifier:.2f}%')
-    print(f'ACO accuracy = {score_aco:.2f}%')
+        
+    print(f'Classifier Accuracy = {score_classifier:.2f}%')
+    print(f'Proposed Algorithm Accuracy = {score_aco:.2f}%')
     
     return score_classifier, score_aco
 
@@ -271,7 +269,7 @@ def trainTestSplit(HSI, gt, TeRatio, randomState=41):
     return X_train, X_test, y_train, y_test
 
 
-def pca(HSI, components):
+def pca(HSI, components = 80):
     HSI_flat = np.reshape(HSI, (-1, HSI.shape[2]))
     n_batches = 64
     # incremental PCA due to very high memory usage
