@@ -35,7 +35,7 @@ X_train_flat, X_test_flat, y_train_flat, y_test_flat, indices_train_flat, indice
 X_train_flat.shape, y_train_flat.shape
 
 
-svm = SVC(kernel = 'poly', degree = 1)
+svm = SVC(kernel = 'poly', degree = 2)
 svm.fit(X_train_flat, y_train_flat)
 y_pred_flat = svm.predict(X_test_flat)
 
