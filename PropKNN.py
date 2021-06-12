@@ -7,7 +7,7 @@ import random
 
 X, y = am.read_HSI()
 
-#am.HSI_band_show(X, 180)
+am.HSI_band_show(X, 180)
 
 # The below method extracts the pixels from the HSI and saves into CSV 
 df = am.extract_pixels(X, y)
